@@ -91,7 +91,7 @@
   <script>
     // ==================== CONFIGURACIÓN ====================
     const API_KEY = "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"; // ← PEGA AQUÍ TU API KEY REAL DE OPENROUTER
-    const MODEL = "openrouter/free";   // Modelo gratuito más estable
+    const MODEL = "baidu/qianfan-ocr-fast:free";   // Modelo gratuito más estable
 
     // =====================================================
 
@@ -149,10 +149,12 @@
         addMessage(reply, "bot");
 
       } catch (error) {
-        console.error(error);
-        loading.remove();
-        addMessage("❌ Error: Revisa que tu API Key esté correcta y que no esté vacía.", "bot");
-      }
+  let errorMsg = "Error desconocido.";
+  if (error.message) errorMsg = error.message;
+  // También podrías leer response.status
+  loading.remove();
+  addMessage(`❌ Error: ${errorMsg}`, "bot");
+}
     }
 
     // Eventos del botón y Enter
