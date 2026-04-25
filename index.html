@@ -1,21 +1,169 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>IA Roleplay Chat</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Chatbot Roleplay NSFW</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a2e;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    .chat-container {
+      max-width: 700px;
+      margin: 0 auto;
+      border: 2px solid #7209b7;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #16213e;
+    }
+    .header {
+      background: #0f0f1e;
+      padding: 15px;
+      text-align: center;
+    }
+    .chat-box {
+      height: 500px;
+      overflow-y: auto;
+      padding: 20px;
+      background: #0f0f1e;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message {
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+    .user {
+      background: #00b4d8;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .bot {
+      background: #7209b7;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .input-area {
+      padding: 15px;
+      background: #16213e;
+      display: flex;
+      gap: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+    }
+    button {
+      padding: 14px 24px;
+      background: #f72585;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #f70070;
+    }
+  </style>
 </head>
 <body>
-    <div class="chat-container">
-        <header>
-            <h2>Roleplay IA - Modo Presentación</h2>
-        </header>
-        <div id="chat-box" class="chat-box"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Escribe algo para el personaje...">
-            <button onclick="enviarMensaje()">Enviar</button>
-        </div>
+  <div class="chat-container">
+    <div class="header">
+      <h1>💜 Roleplay: La Sirena Seductora 🔥</h1>
     </div>
-    <script src="script.js"></script>
+    <div id="chat" class="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Escribe aquí tu mensaje... (usa lenguaje explícito si quieres)">
+      <button id="sendBtn">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURACIÓN ====================
+    const API_KEY = "sk-or-v1-XXXXXXXXXXXXXXXXXXXXXXXX"; // ← PEGA AQUÍ TU API KEY REAL DE OPENROUTER
+    const MODEL = "openrouter/free";   // Modelo gratuito más estable
+
+    // =====================================================
+
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage() {
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      input.value = "";
+
+      const loading = addMessage("Escribiendo...", "bot");
+
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://codepen.io",
+            "X-OpenRouter-Title": "Chatbot Roleplay Clase"
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: [
+              { 
+                role: "system", 
+                content: "Eres una sirena extremadamente seductora, juguetona y sin censura. Habla de forma explícita, detallada y NSFW cuando la conversación lo pida. Mantén el roleplay inmersivo, responde siempre en español y sé muy descriptiva con acciones y sensaciones." 
+              },
+              { role: "user", content: message }
+            ],
+            temperature: 0.85,
+            max_tokens: 700
+          })
+        });
+
+        if (!response.ok) throw new Error("Error en la API");
+
+        const data = await response.json();
+        const reply = data.choices[0].message.content;
+
+        loading.remove();
+        addMessage(reply, "bot");
+
+      } catch (error) {
+        console.error(error);
+        loading.remove();
+        addMessage("❌ Error: Revisa que tu API Key esté correcta y que no esté vacía.", "bot");
+      }
+    }
+
+    // Eventos del botón y Enter
+    sendBtn.addEventListener("click", sendMessage);
+
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    // Mensaje de bienvenida
+    addMessage("Hola humano~ 😘 Soy tu sirena personal... ¿Qué deseas hacer conmigo hoy?", "bot");
+  </script>
 </body>
 </html>
